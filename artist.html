@@ -1,128 +1,157 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Artist Search</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body { background:#0f1720; color:white; }
-    .card { background:#19232d; border:none; }
-    .artist { cursor:pointer; padding:10px; border-bottom:1px solid #2c3a45; color:#4ea9ff; }
-    .artist:hover { background:#101921; }
-  </style>
+  <title>MusicBrainz App</title>
+
+  <!-- Bootstrap CDN -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
 </head>
-<body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-    <a class="navbar-brand" href="index.html">MusicBrainz App</a>
-    <div class="navbar-nav">
-      <a class="nav-link active" href="index.html">Search Artists</a>
-      <a class="nav-link" href="releases.html">Releases Page</a>
+
+<body class="bg-dark text-light">
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#" onclick="showPage('home')">MusicBrainz App</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showPage('home')">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showPage('search')">Search Artists</a>
+          </li>
+        </ul>
+      </div>
     </div>
   </nav>
 
-  <div class="container mt-4">
-    <div class="card p-5 mb-4 text-center">
-      <h1 class="fw-bold mb-3">Welcome to the MusicBrainz App</h1>
-      <p class="text-light mb-3" style="font-size:1.2rem;">
-        Discover artists, explore music metadata, and browse full release catalogs using live data
-        from the <strong>MusicBrainz REST API</strong>.
+  <!-- ====================== HOME PAGE ====================== -->
+  <section id="home" class="container py-5">
+    <div class="card bg-secondary text-light p-4">
+      <h1 class="text-center mb-3">Welcome to the MusicBrainz Explorer</h1>
+      <p class="text-center fs-5">
+        This tool allows you to search for artists and browse their music releases
+        using the official <strong>MusicBrainz REST API</strong>.
       </p>
-      <p class="text-light" style="font-size:1rem;">
-        Start by searching for your favorite artist below. Click on any artist to view a detailed list of their releases.
+      <p class="text-center">
+        Click “Search Artists” above to begin!
       </p>
     </div>
-    <h2 class="mb-3">Search Artists Below</h2>
+  </section>
+
+  <!-- ====================== SEARCH PAGE ====================== -->
+  <section id="search" class="container py-5" style="display:none;">
+    <h2 class="mb-3">Search for an Artist</h2>
 
     <div class="input-group mb-3">
-      <input id="searchInput" class="form-control" placeholder="Search for an artist..." />
+      <input type="text" id="artistInput" class="form-control" placeholder="Enter artist name...">
       <button class="btn btn-primary" onclick="searchArtist()">Search</button>
     </div>
 
-    <div id="results" class="card p-3"></div>
-  </div>
+    <div id="artistResults"></div>
+    <hr class="my-4" />
 
-<script>
-  const BASE = "https://musicbrainz.org/ws/2";
+    <h3>Artist Releases</h3>
+    <div id="releases"></div>
+  </section>
 
-  async function searchArtist() {
-    let q = document.getElementById("searchInput").value;
-    if (!q) return;
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    document.getElementById("results").innerHTML = "Loading...";
+  <!-- ====================== JAVASCRIPT ====================== -->
+  <script>
+    // Navigate between "pages"
+    function showPage(page) {
+      document.getElementById("home").style.display =
+        page === "home" ? "block" : "none";
+      document.getElementById("search").style.display =
+        page === "search" ? "block" : "none";
+    }
 
-    let url = `${BASE}/artist?query=${encodeURIComponent(q)}&fmt=json`;
-    let data = await fetch(url).then(r => r.json());
+    // Search for an artist
+    async function searchArtist() {
+      const artistName = document.getElementById("artistInput").value.trim();
+      const resultDiv = document.getElementById("artistResults");
+      resultDiv.innerHTML = "";
+      document.getElementById("releases").innerHTML = "";
 
-    let html = `<h3>Artists</h3>`;
-    data.artists.forEach(a => {
-      html += `
-        <div class="artist" onclick="location.href='releases.html?mbid=${a.id}&name=${encodeURIComponent(a.name)}'">
-          ${a.name}
-        </div>`;
-    });
+      if (!artistName) return;
 
-    document.getElementById("results").innerHTML = html;
-  }
-</script>
-</body>
-</html>
+      const url = `https://musicbrainz.org/ws/2/artist?query=${encodeURIComponent(
+        artistName
+      )}&fmt=json`;
 
+      const response = await fetch(url);
+      const data = await response.json();
 
-<!-- releases.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Artist Releases</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body { background:#0f1720; color:white; }
-    .card { background:#19232d; border:none; }
-  </style>
-</head>
-<body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-    <a class="navbar-brand" href="index.html">MusicBrainz App</a>
-    <div class="navbar-nav">
-      <a class="nav-link" href="index.html">Search Artists</a>
-      <a class="nav-link active" href="releases.html">Releases Page</a>
-    </div>
-  </nav>
+      if (!data.artists || data.artists.length === 0) {
+        resultDiv.innerHTML = "<p>No artists found.</p>";
+        return;
+      }
 
-  <div class="container mt-4">
-    <h2 id="title">Releases</h2>
-    <div id="releases" class="card p-3"></div>
-  </div>
+      data.artists.forEach((artist) => {
+        const card = document.createElement("div");
+        card.className = "card bg-secondary text-light my-2 p-3";
 
-<script>
-  const BASE = "https://musicbrainz.org/ws/2";
+        card.innerHTML = `
+          <h5>${artist.name}</h5>
+          <p><strong>Country:</strong> ${artist.country || "Unknown"}</p>
+          <p><strong>Type:</strong> ${artist.type || "Unknown"}</p>
+          <button class="btn btn-light btn-sm" onclick="getReleases('${artist.id}', '${artist.name}')">
+            View Releases
+          </button>
+        `;
 
-  const params = new URLSearchParams(window.location.search);
-  const mbid = params.get("mbid");
-  const name = params.get("name");
+        resultDiv.appendChild(card);
+      });
+    }
 
-  document.getElementById("title").innerText = `Releases by ${name}`;
+    // Fetch releases of an artist by ID
+    async function getReleases(artistId, name) {
+      const releasesDiv = document.getElementById("releases");
+      releasesDiv.innerHTML = `<h4>Loading releases for ${name}...</h4>`;
 
-  async function loadReleases() {
-    document.getElementById("releases").innerHTML = "Loading releases...";
+      const url = `https://musicbrainz.org/ws/2/release?artist=${artistId}&fmt=json`;
 
-    let url = `${BASE}/release?artist=${mbid}&fmt=json`;
-    let data = await fetch(url).then(r => r.json());
+      const response = await fetch(url);
+      const data = await response.json();
 
-    let html = "";
-    data.releases.forEach(r => {
-      html += `<div>${r.title} (${r.date || "N/A"})</div>`;
-    });
+      releasesDiv.innerHTML = `<h4>Releases by ${name}</h4>`;
 
-    document.getElementById("releases").innerHTML = html;
-  }
+      if (!data.releases || data.releases.length === 0) {
+        releasesDiv.innerHTML += "<p>No releases found.</p>";
+        return;
+      }
 
-  loadReleases();
-</script>
+      data.releases.forEach((release) => {
+        const item = document.createElement("div");
+        item.className = "card bg-secondary text-light my-2 p-3";
+
+        item.innerHTML = `
+          <h5>${release.title}</h5>
+          <p><strong>Date:</strong> ${release.date || "Unknown"}</p>
+          <p><strong>Status:</strong> ${release.status || "Unknown"}</p>
+        `;
+
+        releasesDiv.appendChild(item);
+      });
+    }
+  </script>
 </body>
 </html>
 
