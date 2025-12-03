@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>MusicBrainz - Two Endpoint App</title>
+  <style>
+    body { background:#0f1720; color:white; font-family:Arial; padding:20px; }
+    .card { background:#19232d; padding:15px; margin-top:15px; border-radius:8px; }
+    input, button { padding:10px; }
+    button { background:#4ea9ff; border:none; color:black; cursor:pointer; }
+    .artist { cursor:pointer; padding:8px 0; border-bottom:1px solid #2c3a45; }
+  </style>
+</head>
+
+<body>
+  <h2>MusicBrainz Search (Two Endpoints)</h2>
+
+  <!-- Search -->
+  <input id="searchInput" placeholder="Search for an artist..." />
+  <button onclick="searchArtist()">Search</button>
+
+  <div id="results" class="card"></div>
+  <div id="releases" class="card"></div>
+
+<script>
+  const BASE = "https://musicbrainz.org/ws/2";
+
+  // 1) Artist Search Endpoint
+  async function searchArtist() {
+    let q = document.getElementById("searchInput").value;
+    if (!q) return;
+
+    document.getElementById("results").innerHTML = "Loading...";
+
+    let url = `${BASE}/artist?query=${encodeURIComponent(q)}&fmt=json`;
+    let data = await fetch(url).then(r => r.json());
+
+    let html = "<h3>Artists</h3>";
+    data.artists.forEach(a => {
+      html += `
+        <div class="artist" onclick="getReleases('${a.id}', '${a.name}')">
+          ${a.name}
+        </div>`;
+    });
+
+    document.getElementById("results").innerHTML = html;
+  }
+
+  // 2) Artist Releases Endpoint
+  async function getReleases(mbid, name) {
+    document.getElementById("releases").innerHTML = "Loading releases...";
+
+    let url = `${BASE}/release?artist=${mbid}&fmt=json`;
+    let data = await fetch(url).then(r => r.json());
+
+    let html = `<h3>Releases by ${name}</h3>`;
+    data.releases.forEach(r => {
+      html += `<div>${r.title} (${r.date || "N/A"})</div>`;
+    });
+
+    document.getElementById("releases").innerHTML = html;
+  }
+</script>
+</body>
+</html>
